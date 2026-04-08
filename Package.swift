@@ -57,7 +57,6 @@ let package = Package(
         .target(
             name: "GRDB",
             dependencies: [
-                .product(name: "SQLCipher", package: "SQLCipher.swift"),
                 .target(name: "GRDBSQLCipher"),
             ],
             path: "GRDB",
