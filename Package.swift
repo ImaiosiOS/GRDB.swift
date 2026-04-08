@@ -1,4 +1,5 @@
 // swift-tools-version:6.1
+
 import Foundation
 import PackageDescription
 
@@ -29,7 +30,6 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
-// ✅ SQLCipher integration
 dependencies.append(.package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.11.0"))
 cSettings.append(.define("SQLITE_HAS_CODEC"))
 swiftSettings.append(.define("SQLITE_HAS_CODEC"))
@@ -51,9 +51,14 @@ let package = Package(
     dependencies: dependencies,
     targets: [
         .target(
+            name: "GRDBSQLCipher",
+            dependencies: [.product(name: "SQLCipher", package: "SQLCipher.swift")]
+        ),
+        .target(
             name: "GRDB",
             dependencies: [
-                .product(name: "SQLCipher", package: "SQLCipher.swift")
+                .product(name: "SQLCipher", package: "SQLCipher.swift"),
+                .target(name: "GRDBSQLCipher"),
             ],
             path: "GRDB",
             resources: [.copy("PrivacyInfo.xcprivacy")],
