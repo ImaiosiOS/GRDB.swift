@@ -1,4 +1,5 @@
 // swift-tools-version:6.1
+// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import Foundation
 import PackageDescription
@@ -11,13 +12,12 @@ let darwinPlatforms: [Platform] = [
     .visionOS,
     .watchOS,
 ]
-
 var swiftSettings: [SwiftSetting] = [
     .define("SQLITE_ENABLE_FTS5"),
     .define("SQLITE_ENABLE_SNAPSHOT"),
+    // Not all Linux distributions have support for WAL snapshots.
     .define("SQLITE_DISABLE_SNAPSHOT", .when(platforms: [.linux])),
 ]
-
 var cSettings: [CSetting] = []
 var dependencies: [PackageDescription.Package.Dependency] = []
 
@@ -30,7 +30,7 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
-// GRDB+SQLCipher
+// GRDB+SQLCipher: Uncommented ✅
 dependencies.append(.package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.11.0"))
 cSettings.append(.define("SQLITE_HAS_CODEC"))
 swiftSettings.append(.define("SQLITE_HAS_CODEC"))
@@ -38,7 +38,7 @@ swiftSettings.append(.define("SQLCipher"))
 
 let package = Package(
     name: "GRDB",
-    defaultLocalization: "en",
+    defaultLocalization: "en", // for tests
     platforms: [
         .iOS(.v13),
         .macOS(.v10_15),
@@ -46,32 +46,31 @@ let package = Package(
         .watchOS(.v7),
     ],
     products: [
-        // ✅ Exposed as product so mergeable builds can resolve it
-        .library(name: "GRDBSQLCipher", targets: ["GRDBSQLCipher"]),
+        // GRDB+SQLCipher: GRDBSQLite library deleted ✅
         .library(name: "GRDB", targets: ["GRDB"]),
         .library(name: "GRDB-dynamic", type: .dynamic, targets: ["GRDB"]),
     ],
     dependencies: dependencies,
     targets: [
-        // ✅ SQLCipher bridge target
+        // GRDB+SQLCipher: GRDBSQLite target deleted ✅
+
+        // GRDB+SQLCipher: GRDBSQLCipher target uncommented ✅
         .target(
             name: "GRDBSQLCipher",
-            dependencies: [
-                .product(name: "SQLCipher", package: "SQLCipher.swift")
-            ]
+            dependencies: [.product(name: "SQLCipher", package: "SQLCipher.swift")]
         ),
-        // ✅ Main GRDB target — links SQLCipher + GRDBSQLCipher bridge
         .target(
             name: "GRDB",
             dependencies: [
+                // GRDB+SQLCipher: GRDBSQLite dependency deleted ✅
+                // GRDB+SQLCipher: SQLCipher + GRDBSQLCipher dependencies uncommented ✅
                 .product(name: "SQLCipher", package: "SQLCipher.swift"),
                 .target(name: "GRDBSQLCipher"),
             ],
             path: "GRDB",
             resources: [.copy("PrivacyInfo.xcprivacy")],
             cSettings: cSettings,
-            swiftSettings: swiftSettings
-        ),
+            swiftSettings: swiftSettings),
         .testTarget(
             name: "GRDBTests",
             dependencies: ["GRDB"],
@@ -100,8 +99,7 @@ let package = Package(
                 .swiftLanguageMode(.v5),
                 .enableUpcomingFeature("InferSendableFromCaptures"),
                 .enableUpcomingFeature("GlobalActorIsolatedTypesUsability"),
-            ]
-        )
+            ])
     ],
     swiftLanguageModes: [.v6]
 )
