@@ -62,6 +62,9 @@ let package = Package(
         // MARK: - C layer (SQLCipher bridge)
         .target(
             name: "GRDBSQLCipher",
+            dependencies: [
+                .product(name: "SQLCipher", package: "SQLCipher.swift")
+            ],
             path: "Sources/GRDBSQLCipher",
             publicHeadersPath: "include",
             cSettings: cSettings
