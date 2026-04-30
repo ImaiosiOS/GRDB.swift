@@ -56,6 +56,11 @@ let package = Package(
                 .product(name: "SQLCipher", package: "SQLCipher.swift")
             ],
             path: "GRDB",
+            exclude: [
+        // ✅ Exclude GRDB's own SQLite — use SQLCipher's instead
+        "vendor/sqlite3.h",
+        "vendor/sqlite3.c",
+    ],
             resources: [.copy("PrivacyInfo.xcprivacy")],
             cSettings: cSettings,
             swiftSettings: swiftSettings
