@@ -61,8 +61,8 @@ let package = Package(
                 "GRDB",                       // GRDB Swift sources
                 "Sources/GRDBSQLCipher",      // SQLCipher C bridge sources
             ],
-            publicHeadersPath: "Sources/GRDBSQLCipher/include",
-            resources: [.copy("GRDB/PrivacyInfo.xcprivacy")],
+            resources: [.copy("GRDB/PrivacyInfo.xcprivacy")],   // ✅ resources before publicHeadersPath
+            publicHeadersPath: "Sources/GRDBSQLCipher/include",  // ✅ publicHeadersPath last
             cSettings: cSettings,
             swiftSettings: swiftSettings
         ),
