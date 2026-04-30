@@ -4,7 +4,6 @@ import SQLCipher
 #elseif GRDBFRAMEWORK // GRDB.xcodeproj or CocoaPods (standard subspec)
 import SQLite3
 #elseif GRDBCUSTOMSQLITE // GRDBCustom Framework
-import GRDBSQLCipher
 #elseif SQLCipher
 import SQLCipher
 #else // Default SPM trait must be the default. It impossible to detect from Xcode.
