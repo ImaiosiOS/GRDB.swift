@@ -1,4 +1,4 @@
-// swift-tools-version:6.1
+// swift-tools-version: 6.1
 
 import Foundation
 import PackageDescription
@@ -19,18 +19,26 @@ var swiftSettings: [SwiftSetting] = [
 ]
 
 var cSettings: [CSetting] = []
-var dependencies: [PackageDescription.Package.Dependency] = []
+var dependencies: [Package.Dependency] = []
 
+// Optional preupdate hook
 if ProcessInfo.processInfo.environment["SQLITE_ENABLE_PREUPDATE_HOOK"] == "1" {
     swiftSettings.append(.define("SQLITE_ENABLE_PREUPDATE_HOOK"))
     cSettings.append(.define("GRDB_SQLITE_ENABLE_PREUPDATE_HOOK"))
 }
 
+// SPI builder (DocC)
 if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
-    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
+    dependencies.append(
+        .package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0")
+    )
 }
 
-dependencies.append(.package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.11.0"))
+// SQLCipher dependency
+dependencies.append(
+    .package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.11.0")
+)
+
 cSettings.append(.define("SQLITE_HAS_CODEC"))
 swiftSettings.append(.define("SQLITE_HAS_CODEC"))
 swiftSettings.append(.define("SQLCipher"))
@@ -50,22 +58,30 @@ let package = Package(
     ],
     dependencies: dependencies,
     targets: [
-        // ✅ GRDBSQLCipher sources merged directly into GRDB target
+        
+        // MARK: - C layer (SQLCipher bridge)
+        .target(
+            name: "GRDBSQLCipher",
+            path: "Sources/GRDBSQLCipher",
+            publicHeadersPath: "include",
+            cSettings: cSettings
+        ),
+        
+        // MARK: - Swift API
         .target(
             name: "GRDB",
             dependencies: [
+                "GRDBSQLCipher",
                 .product(name: "SQLCipher", package: "SQLCipher.swift"),
             ],
-            path: ".",
-            sources: [
-                "GRDB",                       // GRDB Swift sources
-                "Sources/GRDBSQLCipher",      // SQLCipher C bridge sources
+            path: "Sources/GRDB",
+            resources: [
+                .copy("PrivacyInfo.xcprivacy")
             ],
-            resources: [.copy("GRDB/PrivacyInfo.xcprivacy")],   // ✅ resources before publicHeadersPath
-            publicHeadersPath: "Sources/GRDBSQLCipher/include",  // ✅ publicHeadersPath last
-            cSettings: cSettings,
             swiftSettings: swiftSettings
         ),
+        
+        // MARK: - Tests
         .testTarget(
             name: "GRDBTests",
             dependencies: ["GRDB"],
@@ -95,7 +111,7 @@ let package = Package(
                 .enableUpcomingFeature("InferSendableFromCaptures"),
                 .enableUpcomingFeature("GlobalActorIsolatedTypesUsability"),
             ]
-        )
+        ),
     ],
     swiftLanguageModes: [.v6]
 )
