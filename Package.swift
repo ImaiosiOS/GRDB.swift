@@ -30,6 +30,7 @@ if ProcessInfo.processInfo.environment["SPI_BUILDER"] == "1" {
     dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
 }
 
+// ✅ GRDB+SQLCipher: Uncommented
 dependencies.append(.package(url: "https://github.com/sqlcipher/SQLCipher.swift.git", from: "4.11.0"))
 cSettings.append(.define("SQLITE_HAS_CODEC"))
 swiftSettings.append(.define("SQLITE_HAS_CODEC"))
@@ -45,22 +46,28 @@ let package = Package(
         .watchOS(.v7),
     ],
     products: [
+        // ✅ GRDBSQLite deleted — SQLCipher replaces it
         .library(name: "GRDB", targets: ["GRDB"]),
         .library(name: "GRDB-dynamic", type: .dynamic, targets: ["GRDB"]),
     ],
     dependencies: dependencies,
     targets: [
+        // ✅ GRDBSQLite system library deleted
+        
+        // ✅ GRDBSQLCipher target uncommented
+        .target(
+            name: "GRDBSQLCipher",
+            dependencies: [.product(name: "SQLCipher", package: "SQLCipher.swift")]
+        ),
         .target(
             name: "GRDB",
             dependencies: [
-                .product(name: "SQLCipher", package: "SQLCipher.swift")
+                // ✅ GRDBSQLite deleted
+                // ✅ SQLCipher + GRDBSQLCipher uncommented
+                .product(name: "SQLCipher", package: "SQLCipher.swift"),
+                .target(name: "GRDBSQLCipher"),
             ],
             path: "GRDB",
-            exclude: [
-        // ✅ Exclude GRDB's own SQLite — use SQLCipher's instead
-        "vendor/sqlite3.h",
-        "vendor/sqlite3.c",
-    ],
             resources: [.copy("PrivacyInfo.xcprivacy")],
             cSettings: cSettings,
             swiftSettings: swiftSettings
